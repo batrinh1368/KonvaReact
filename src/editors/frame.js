@@ -1,150 +1,89 @@
 import React from 'react';
-import { Stage, Layer } from 'react-konva';
-import Konva from 'konva';
+import '../App.css';
+import Preview from './preview';
+import AppContext from '../app.context';
+import ImageElement from './image-element';
+import TextElement from './text-element';
 
-export default class Frame extends React.Component {
+class Frame extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {
-      designs: props.designs,
-    };
-    this.stage = React.createRef();
-    this.layer = React.createRef();
-    this.wrapperRef = React.createRef();
-    this.handleClick = this.handleClick.bind(this);
-    this.handleKeyboard = this.handleKeyboard.bind(this);
+
+    this.preview = React.createRef();
   }
 
-  componentDidMount() {
-    if (this.state.designs) {
-      this.state.designs.forEach((element) => {
-        this.addItem(element);
-      });
-    }
-    document.addEventListener('mousedown', this.handleClick);
-    document.addEventListener('keydown', this.handleKeyboard);
+  componentDidMount() {}
+
+  addText() {
+    console.log('addText.');
+    this.context.addText();
+    this._updatePreview();
   }
 
-  componentWillUnmount() {
-    document.removeEventListener('mousedown', this.handleClick);
-    document.removeEventListener('keydown', this.handleKeyboard);
+  addTextPath() {
+    console.log('addTextPath.');
+    this.context.addTextPath();
+    this._updatePreview();
   }
 
-  addItem(item) {
-    const layerItem = this._getItemObject(item);
-    layerItem.on('click', this.itemClick.bind(this));
-    this.layer.current.add(layerItem);
-
-    this.redraw();
+  addImage() {
+    console.log('addImage.');
+    this.context.addImage();
+    this._updatePreview();
   }
 
-  itemClick(event) {
-    this.currentItem = event.target;
-    this.disposeTransformer();
-
-    this.layer.current.transformer = this.addTransformer(event.target);
+  addRect() {
+    console.log('addRect.');
+    this.context.addImage();
+    this._updatePreview();
   }
 
-  addTransformer(...layerItem) {
-    const MIN_WIDTH = 20;
-    const tr = new Konva.Transformer({
-      nodes: [...layerItem],
-      padding: 5,
-      // enable only side anchors
-      // limit transformer size
-      boundBoxFunc: (oldBox, newBox) => {
-        if (newBox.width < MIN_WIDTH) {
-          return oldBox;
-        }
-        return newBox;
-      },
-    });
-    this.layer.current.add(tr);
-    this.redraw();
-    return tr;
+  _addItem(type = 'text') {
+    const item = { type: type };
+    this.context.addItem(item);
+    this._updatePreview();
   }
 
-  disposeTransformer() {
-    if (this.layer.current.transformer) {
-      this.layer.current.transformer.destroy();
-      this.layer.current.batchDraw();
-    }
+  _updatePreview() {
+    const indexItem = this.context.designs.length - 1;
+    const item = this.context.designs[indexItem];
+    this.preview.current.addItem(item);
   }
 
-  redraw() {
-    this.layer.current.batchDraw();
-  }
-
-  _getItemObject(item, draggable = true) {
-    if (item.type === 'rect') {
-      return new Konva.Rect({
-        x: 0,
-        y: 0,
-        width: 50,
-        height: 50,
-        fill: 'red',
-        draggable,
-      });
-    } else if (item.type === 'image') {
-      var imageObj = new Image();
-      imageObj.src =
-        'https://www.lemark.co.uk/wp-content/uploads/Your-Image-Here-1.jpg';
-      return new Konva.Image({
-        image: imageObj,
-        x: 0,
-        y: 0,
-        width: 200,
-        height: 200,
-        draggable,
-      });
-    } else if (item.type === 'textPath') {
-      return new Konva.TextPath({
-        x: 0,
-        y: 50,
-        fill: '#333',
-        fontSize: 16,
-        fontFamily: 'Arial',
-        text:
-          "All the world's a stage, and all the men and women merely players.",
-        data: 'M100,320 C200,200 400,400 500 80',
-        draggable,
-      });
-    } else {
-      return new Konva.Text({
-        x: 0,
-        y: 0,
-        text: 'Simple Text',
-        draggable,
-      });
-    }
-  }
-
-  handleClick(event) {
-    if (this.wrapperRef && !this.wrapperRef.current.contains(event.target)) {
-      this.disposeTransformer();
-    }
-  }
-
-  handleKeyboard(event) {
-    if (event.keyCode === 27) {
-      // Do whatever when esc is pressed
-      this.disposeTransformer();
-    } else if (event.keyCode === 46) {
-      // DELETE
-      this.disposeTransformer();
-      if (this.currentItem) {
-        this.currentItem.remove();
-        this.currentItem = null;
-      }
-    }
-  }
   render() {
     return (
-      <div id="preview" ref={this.wrapperRef}>
-        <Stage width={600} height={600} ref={this.stage}>
-          <Layer key="frame.layer" ref={this.layer}></Layer>
-        </Stage>
+      <div id="editor" className="d-flex-center">
+        <div className="col panel">
+          <div className="list-element">
+            {this.context.designs.map((item, index) => {
+              if (item.type === 'image') {
+                return (
+                  <ImageElement key={index} indexKey={index} value={item}></ImageElement>
+                );
+              } else if (item.type === 'text') {
+                return <TextElement key={index} indexKey={index} value={item}></TextElement>;
+              } else {
+                return <div key={index}>{item.default}</div>;
+              }
+            })}
+          </div>
+          <div className="panel-button">
+            <button onClick={() => this.addText()}>Add Text</button>
+            <button onClick={() => this.addTextPath()}>Add Text Path</button>
+            <button onClick={() => this.addImage()}>Add Image</button>
+            <button onClick={() => this.addRect()}>Add Rect</button>
+          </div>
+        </div>
+        <div className="col">
+          <Preview ref={this.preview} key="frame.app"></Preview>
+        </div>
+        <div id="info" className="col">
+          <pre>{JSON.stringify(this.context.designs)}</pre>
+        </div>
       </div>
     );
   }
 }
+Frame.contextType = AppContext;
+
+export default Frame;

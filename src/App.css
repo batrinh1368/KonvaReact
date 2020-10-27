@@ -37,12 +37,45 @@
   }
 }
 
-#preview {
+.d-flex-center {
   display: flex;
   justify-content: center;
+}
+
+#editor {
   padding: 10px;
 }
 
 #preview .konvajs-content {
   border: 1px solid red;
+}
+
+.panel {
+  display: flex;
+  flex-flow: wrap;
+  max-width: 300px;
+}
+
+.panel-button {
+  display: flex;
+  align-items: flex-end;
+}
+
+.panel-button button {
+  margin: 0 5px;
+}
+
+#info {
+  padding: 15px;
+  max-width: 250px;
+}
+
+#info > pre {
+  background-color: #e8e8e8;
+  white-space: initial;
+  text-align: left;
+  word-break: break-word;
+}
+.element-items {
+  text-align: left;
 }
