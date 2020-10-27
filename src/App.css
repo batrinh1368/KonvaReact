@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+#preview {
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+}
+
+#preview .konvajs-content {
+  border: 1px solid red;
+}
