@@ -1,9 +1,13 @@
 import React from 'react';
 import '../App.css';
+import AppContext from '../app.context';
 
 class ImageElement extends React.Component {
   state = {
-    value: {},
+    value: {
+      value: '',
+    },
+    text: '',
   };
 
   constructor(props) {
@@ -14,6 +18,7 @@ class ImageElement extends React.Component {
     this.setState({
       value: this.props.value,
       indexKey: this.props.indexKey,
+      text: this.props.value.value || this.props.value.default,
     });
   }
 
@@ -29,18 +34,29 @@ class ImageElement extends React.Component {
     debugger;
   }
 
+  onTextChange(event) {
+    this.context.updateItemByIndex(this.state.indexKey, {
+      value: event.target.value,
+    });
+  }
+
   render() {
     return (
-      <div className="element-items">
-        <input
-          type="file"
-          className="input-control"
-          onChange={this.onUploadImage.bind(this)}
-        ></input>
-        <label>{this.state.value.value || this.state.value.default}</label>
+      <div className="element-base-info">
+        <div className="element-info">
+          <label>Image: </label>
+          <input
+            className="input-control"
+            onChange={this.onTextChange.bind(this)}
+            value={this.state.text || ''}
+          ></input>
+        </div>
+        <div className="element-attrs"></div>
       </div>
     );
   }
 }
+
+ImageElement.contextType = AppContext;
 
 export default ImageElement;

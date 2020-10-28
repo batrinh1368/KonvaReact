@@ -88,12 +88,14 @@ class Preview extends React.Component {
     const value = eventData.valueItem.value || eventData.valueItem.default;
     if (eventData.valueItem.type === 'text') {
       eventData.graphicItem.text(value);
-    }else if (eventData.valueItem.type === 'image') {
+    } else if (eventData.valueItem.type === 'image') {
       var imageObj = new Image();
       imageObj.src = value;
       eventData.graphicItem.image(imageObj);
+      imageObj.onload = this.redraw.bind(this);
     }
     console.log('onModelChange');
+
     this.redraw();
   }
 
@@ -138,8 +140,10 @@ class Preview extends React.Component {
         draggable,
       });
     } else if (item.type === 'image') {
-      var imageObj = new Image();
+      const imageObj = new Image();
       imageObj.src = item.default;
+      imageObj.onload = this.redraw.bind(this);
+
       return new Konva.Image({
         image: imageObj,
         x: 0,

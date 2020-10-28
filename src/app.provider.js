@@ -91,6 +91,9 @@ export default class AppProvider extends React.Component {
           addItem: (item) => {
             this._addItem(item);
           },
+          updateDesignState: (designs) => {
+            this._updateState(designs);
+          },
         }}
       >
         {this.props.children}

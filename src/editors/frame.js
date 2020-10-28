@@ -2,14 +2,15 @@ import React from 'react';
 import '../App.css';
 import Preview from './preview';
 import AppContext from '../app.context';
-import ImageElement from './image-element';
-import TextElement from './text-element';
+import PanelItem from './panel-item';
+import DragSortableList from 'react-drag-sortable';
 
 class Frame extends React.Component {
   constructor(props) {
     super(props);
 
     this.preview = React.createRef();
+    this.dragList = React.createRef();
   }
 
   componentDidMount() {}
@@ -50,22 +51,38 @@ class Frame extends React.Component {
     this.preview.current.addItem(item);
   }
 
+  onSort(sortedList, dropEvent) {
+    console.log('sortedList', sortedList);
+    const elementItems = [];
+    sortedList.forEach((value) => {
+      elementItems.push(value.item);
+    });
+
+    this.context.updateDesignState(elementItems);
+  }
+
   render() {
+    const listDrag = [];
+
+    this.context.designs.forEach((item, index) => {
+      listDrag.push({
+        content: <PanelItem item={item} key={index}></PanelItem>,
+        item: item,
+      });
+    });
+
     return (
       <div id="editor" className="d-flex-center">
         <div className="col panel">
           <div className="list-element">
-            {this.context.designs.map((item, index) => {
-              if (item.type === 'image') {
-                return (
-                  <ImageElement key={index} indexKey={index} value={item}></ImageElement>
-                );
-              } else if (item.type === 'text') {
-                return <TextElement key={index} indexKey={index} value={item}></TextElement>;
-              } else {
-                return <div key={index}>{item.default}</div>;
+            <DragSortableList
+              ref={this.dragList}
+              items={listDrag}
+              onSort={(sortedList, dropEvent) =>
+                this.onSort(sortedList, dropEvent)
               }
-            })}
+              type="vertical"
+            />
           </div>
           <div className="panel-button">
             <button onClick={() => this.addText()}>Add Text</button>
