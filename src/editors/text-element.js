@@ -6,10 +6,10 @@ class TextElement extends React.Component {
   state = {
     value: {
       value: '',
+      color: '#fff',
+      fontSize: 14,
     },
     text: '',
-    color: '#fff',
-    fontSize: 14,
   };
 
   constructor(props) {
@@ -26,7 +26,7 @@ class TextElement extends React.Component {
   }
 
   onTextChange(event) {
-    this.context.updateItemByIndex(this.state.indexKey, {
+    this._updateConfig({
       value: {
         text: event.target.value
       },
@@ -42,11 +42,37 @@ class TextElement extends React.Component {
     });
   }
 
-  onFontSizeChange(event) {
-
+  onFontChange(event) {
+    this._updateConfig({
+      fontFamily: event.target.value,
+    });
   }
 
-  onColorChange() {}
+  onFontSizeChange(event) {
+    this._updateConfig({
+      fontSize: event.target.value,
+    });
+  }
+
+  onColorChange(event) {
+    this._updateConfig({
+      color: event.target.value,
+    });
+  }
+
+  _updateConfig(config) {
+    this.context.updateItemByIndex(
+      this.state.indexKey,
+      Object.assign(
+        {
+          fontSize: this.state.value.fontSize || 12,
+          color: this.state.value.color || '#000000',
+          fontFamily: this.state.value.fontFamily || 'Arial',
+        },
+        config
+      )
+    );
+  }
 
   render() {
     return (
@@ -56,7 +82,7 @@ class TextElement extends React.Component {
           <input
             className="input-control"
             onChange={this.onTextChange.bind(this)}
-            value={this.state.text || ''}
+            value={this.props.value.value || this.props.value.default || ''}
           />
         </div>
         <div className="element-attrs">
@@ -72,20 +98,21 @@ class TextElement extends React.Component {
           </select>
           Size:{' '}
           <input
+            type="number"
             className="font-size"
             width={30}
-            value={this.state.fontSize || ''}
-            onChange={this.onFontSizeChange}
+            value={this.props.value.fontSize || 12}
+            onChange={this.onFontSizeChange.bind(this)}
           ></input>
           px Color:{' '}
           <input
             className="font-color"
             width={30}
             type="color"
-            value={this.state.color || ''}
-            onChange={this.onColorChange}
+            value={this.props.value.color || '#000000'}
+            onChange={this.onColorChange.bind(this)}
           ></input>
-          <span>{this.state.color}</span>
+          <span>{this.props.value.color}</span>
         </div>
       </div>
     );

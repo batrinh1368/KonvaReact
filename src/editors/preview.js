@@ -3,6 +3,7 @@ import { Stage, Layer } from 'react-konva';
 import Konva from 'konva';
 import AppContext from '../app.context';
 import './style.css'
+import DesignConst from './design-const';
 
 class Preview extends React.Component {
   constructor(props) {
@@ -87,19 +88,24 @@ class Preview extends React.Component {
   }
 
   onModelChange(eventData) {
-    const value = eventData.valueItem.value || eventData.valueItem.default;
-    if (eventData.valueItem.type === 'text') {
-      const fontFamily = value.fontFamily || eventData.graphicItem.fontFamily;
-      eventData.graphicItem.text(value.text);
-      eventData.graphicItem.fontFamily(fontFamily);
+    const dataItem = eventData.valueItem;
+    const graphicItem = eventData.graphicItem;
+    const value = dataItem.value || dataItem.default;
+    if (dataItem.type === 'text' || dataItem.type === 'textPath') {
+      graphicItem.text(value);
+      graphicItem.fill(dataItem.color);
+      graphicItem.fontSize(dataItem.fontSize);
+      graphicItem.fontFamily(dataItem.fontFamily);
     } else if (eventData.valueItem.type === 'image') {
-      var imageObj = new Image();
+      const imageObj = new Image();
       imageObj.src = value;
-      eventData.graphicItem.image(imageObj);
+      imageObj.onload = this.redraw.bind(this);
+      graphicItem.image(imageObj);
       imageObj.onload = this.redraw.bind(this);
     } else if (eventData.valueItem.type === 'font') {
       eventData.graphicItem.fontFamily(value);
     }
+    // eventData.graphicItem = this._getItemObject(eventData.valueItem)
     console.log('onModelChange');
 
     this.redraw();
@@ -135,45 +141,51 @@ class Preview extends React.Component {
     this.layer.current.batchDraw();
   }
 
-  _getItemObject(item, draggable = true) {
-    if (item.type === 'rect') {
-      return new Konva.Rect({
-        x: 0,
-        y: 0,
-        width: 50,
-        height: 50,
-        fill: 'red',
-        draggable,
-      });
-    } else if (item.type === 'image') {
-      const imageObj = new Image();
-      imageObj.src = item.default;
-      imageObj.onload = this.redraw.bind(this);
+  redrawAll(designs) {
+    this.layer.current.clear()
+    this.layer.current.destroyChildren()
+    designs.forEach((item) => {
+      this.addItem(item);
+    });
+  }
 
+  _getItemObject(item, draggable = true) {
+    const transformData = Object.assign(DesignConst.DEFAULT_TRANSFORM, {
+      x: item.x,
+      y: item.y,
+      rotation: item.rotation,
+      scaleX: item.scaleX,
+      scaleY: item.scaleY,
+      skewX: item.skewX,
+    });
+    if (item.type === 'image') {
+      const imageObj = new Image();
+      imageObj.src = item.value || item.default;
+      imageObj.onload = this.redraw.bind(this);
       return new Konva.Image({
         image: imageObj,
-        x: 0,
-        y: 0,
-        width: 200,
-        height: 200,
+        width: item.width || 200,
+        height: item.height || 200,
+        ...transformData,
         draggable,
       });
     } else if (item.type === 'textPath') {
       return new Konva.TextPath({
-        x: 0,
-        y: 0,
         fill: '#333',
         fontSize: 16,
         fontFamily: 'Arial',
-        text: item.default,
+        text: item.value || item.default,
         data: 'M100,320 C200,200 400,400 500 80',
+        ...transformData,
         draggable,
       });
     } else {
       return new Konva.Text({
-        x: 0,
-        y: 0,
-        text: item.default,
+        text: item.value || item.default,
+        fontSize: item.fontSize || 12,
+        fill: item.color || '#000000',
+        fontFamily: item.fontFamily || 'Arial',
+        ...transformData,
         draggable,
         fontFamily: 'Courier'
       });
