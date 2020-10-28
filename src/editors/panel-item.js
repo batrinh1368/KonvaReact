@@ -34,7 +34,9 @@ class PanelItem extends React.Component {
         <TextElement key={index} indexKey={index} value={item}></TextElement>
       );
     } else {
-      itemTemplate = item.default;
+      itemTemplate = (
+        <TextElement key={index} indexKey={index} value={item}></TextElement>
+      );
     }
 
     return (

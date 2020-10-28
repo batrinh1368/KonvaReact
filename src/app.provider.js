@@ -2,6 +2,7 @@ import React from 'react';
 import AppContext from './app.context';
 
 export default class AppProvider extends React.Component {
+  STORAGE_NAME = '___design_data';
   DEFAULT_TEXT = 'This is my text.';
   DEFAULT_IMAGE_SRC =
     'https://www.lemark.co.uk/wp-content/uploads/Your-Image-Here-1.jpg';
@@ -15,6 +16,20 @@ export default class AppProvider extends React.Component {
       },
     ],
   };
+
+  constructor() {
+    super();
+    if (localStorage.getItem(this.STORAGE_NAME)) {
+      const designs = JSON.parse(localStorage.getItem(this.STORAGE_NAME));
+      this.state = {
+        designs,
+        enableEdit: true,
+      };
+      console.log('Load from storage');
+    }
+  }
+
+  componentDidMount() {}
 
   _addItem(item) {
     const designs = this.state.designs;
@@ -49,6 +64,8 @@ export default class AppProvider extends React.Component {
   }
 
   render() {
+    console.log('Init provider');
+
     return (
       <AppContext.Provider
         value={{
@@ -65,7 +82,7 @@ export default class AppProvider extends React.Component {
               default: text || this.DEFAULT_TEXT,
             });
           },
-          addTextPath: (text = '') => {
+          addTextPath: (text = 'This is text path') => {
             this._addItem({
               type: 'textPath',
               default: text || this.DEFAULT_TEXT,
@@ -84,15 +101,24 @@ export default class AppProvider extends React.Component {
             }
           },
           updateItemByIndex: (index, value) => {
-            if (this.state.designs[index]) {
-              this._updateItem(index, value, true);
-            }
+            this._updateItem(index, value, true);
           },
           addItem: (item) => {
             this._addItem(item);
           },
           updateDesignState: (designs) => {
             this._updateState(designs);
+          },
+          enableEdit: (enable) => {
+            this.setState({
+              enableEdit: enable,
+            });
+          },
+          saveData: () => {
+            localStorage.setItem(
+              this.STORAGE_NAME,
+              JSON.stringify(this.state.designs)
+            );
           },
         }}
       >

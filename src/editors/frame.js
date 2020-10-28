@@ -6,6 +6,9 @@ import PanelItem from './panel-item';
 import DragSortableList from 'react-drag-sortable';
 
 class Frame extends React.Component {
+  state = {
+    enableEdit: true,
+  };
   constructor(props) {
     super(props);
 
@@ -13,7 +16,9 @@ class Frame extends React.Component {
     this.dragList = React.createRef();
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    console.log(this.context.designs);
+  }
 
   addText() {
     console.log('addText.');
@@ -39,6 +44,21 @@ class Frame extends React.Component {
     this._updatePreview();
   }
 
+  enableEditSetting() {
+    this.state.enableEdit = !this.state.enableEdit;
+    this.context.enableEdit(this.state.enableEdit);
+  }
+
+  saveData() {
+    this.context.saveData();
+  }
+
+  resetData() {
+    const elementItems = [];
+    this.context.updateDesignState(elementItems);
+    this.preview.current.redrawAll(elementItems);
+  }
+
   _addItem(type = 'text') {
     const item = { type: type };
     this.context.addItem(item);
@@ -59,90 +79,62 @@ class Frame extends React.Component {
     });
 
     this.context.updateDesignState(elementItems);
+    this.preview.current.redrawAll(elementItems);
   }
 
   render() {
-    // const listDrag = [];
-    // this.context.designs.forEach((item, index) => {
-    //   listDrag.push({
-    //     content: <PanelItem item={item} key={index}></PanelItem>,
-    //     item: item,
-    //   });
-    // });
-    // this.context.designs.forEach((item, index) => {
-    //   let element;
-    //   if (item.type === 'image') {
-    //     element = (
-    //       <ImageElement
-    //         key={index}
-    //         indexKey={index}
-    //         value={item}
-    //       ></ImageElement>
-    //     );
-    //   } else if (item.type === 'text') {
-    //     element = (
-    //       <TextElement key={index} indexKey={index} value={item}></TextElement>
-    //     );
-    //   } else {
-    //     element = <div key={index}>{item.default}</div>;
-    //   }
-
-    //   listDrag.push({
-    //     content: element,
-    //     item: item,
-    //   });
-    // });
+    const listDrag = [];
+    this.context.designs.forEach((item, index) => {
+      listDrag.push({
+        content: <PanelItem item={item} key={index}></PanelItem>,
+        item: item,
+      });
+    });
     return (
-      <div id="editor" className="d-flex-center">
-        <div className="col panel">
-          <div className="list-element">
-            {/* {this.context.designs.map((item, index) => {
-              if (item.type === 'image') {
-                return (
-                  <ImageElement
-                    key={index}
-                    indexKey={index}
-                    value={item}
-                  ></ImageElement>
-                );
-              } else if (item.type === 'text') {
-                return (
-                  <TextElement
-                    key={index}
-                    indexKey={index}
-                    value={item}
-                  ></TextElement>
-                );
-              } else {
-                return <div key={index}>{item.default}</div>;
-              }
-            })} */}
-            {this.context.designs.map((item, index) => {
-              return (
-                <PanelItem item={item} key={index} index={index}></PanelItem>
-              );
-            })}
-            {/* <DragSortableList
-              ref={this.dragList}
-              items={listDrag}
-              onSort={(sortedList, dropEvent) =>
-                this.onSort(sortedList, dropEvent)
-              }
-              type="vertical"
-            /> */}
-          </div>
-          <div className="panel-button">
-            <button onClick={() => this.addText()}>Add Text</button>
-            <button onClick={() => this.addTextPath()}>Add Text Path</button>
-            <button onClick={() => this.addImage()}>Add Image</button>
-            <button onClick={() => this.addRect()}>Add Rect</button>
-          </div>
+      <div id="editor">
+        <div className="text-left">
+          <input
+            id="chkEditMode"
+            type="checkbox"
+            onChange={this.enableEditSetting.bind(this)}
+            value={this.state.enableEdit || true}
+          />
+          <label htmlFor="chkEditMode">Edit mode</label>
         </div>
-        <div className="col">
-          <Preview ref={this.preview} key="frame.app"></Preview>
-        </div>
-        <div id="info" className="col">
-          <pre>{JSON.stringify(this.context.designs)}</pre>
+        <div className="d-flex-center">
+          <div className="col panel">
+            <div className="list-element">
+              {this.context.designs.map((item, index) => {
+                return (
+                  <PanelItem item={item} key={index} index={index}></PanelItem>
+                );
+              })}
+              {/* <DragSortableList
+                ref={this.dragList}
+                items={listDrag}
+                onSort={(sortedList, dropEvent) =>
+                  this.onSort(sortedList, dropEvent)
+                }
+                type="vertical"
+              /> */}
+            </div>
+            <div className="panel-button">
+              <button onClick={() => this.addText()}>Add Text</button>
+              <button onClick={() => this.addTextPath()}>Add Text Path</button>
+              <button onClick={() => this.addImage()}>Add Image</button>
+            </div>
+          </div>
+          <div className="col">
+            <Preview ref={this.preview} key="frame.app"></Preview>
+          </div>
+          <div id="info" className="col">
+            <div className="text-left">
+              <button onClick={() => this.saveData()}>Save</button>
+              <button onClick={() => this.resetData()}>Reset</button>
+            </div>
+            <hr />
+            <pre>{JSON.stringify(this.context.designs)}</pre>
+          </div>
         </div>
       </div>
     );

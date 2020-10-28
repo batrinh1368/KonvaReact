@@ -69,11 +69,11 @@
 #info {
   padding: 0 15px;
   max-width: 400px;
-  max-height: 600px;
-  overflow-y: auto;
 }
 
 #info > pre {
+  max-height: 555px;
+  overflow-y: auto;
   background-color: #e8e8e8;
   white-space: initial;
   text-align: left;
@@ -108,8 +108,11 @@
 }
 
 .font-size {
-  width: 30px;
+  width: 50px;
 }
 i.sort {
   cursor: move;
+}
+.text-left {
+  text-align: left;
 }
