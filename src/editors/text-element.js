@@ -42,7 +42,7 @@ class TextElement extends React.Component {
           <input
             className="input-control"
             onChange={this.onTextChange.bind(this)}
-            value={this.state.text || ''}
+            value={this.props.value.value || this.props.value.default || ''}
           />
         </div>
         <div className="element-attrs">
@@ -59,7 +59,8 @@ class TextElement extends React.Component {
           </select>
           Size:{' '}
           <input
-            className="font-size"
+            type="number"
+            className="font-size w-30"
             width={30}
             value={this.state.fontSize || ''}
             onChange={this.onFontSizeChange}

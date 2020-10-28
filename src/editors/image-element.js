@@ -36,8 +36,8 @@ class ImageElement extends React.Component {
 
   onTextChange(event) {
     this.context.updateItemByIndex(this.state.indexKey, {
-      value: event.target.value,
-    });
+      value: event.target.value
+    })
   }
 
   render() {

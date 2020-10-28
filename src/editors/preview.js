@@ -88,9 +88,10 @@ class Preview extends React.Component {
     const value = eventData.valueItem.value || eventData.valueItem.default;
     if (eventData.valueItem.type === 'text') {
       eventData.graphicItem.text(value);
-    } else if (eventData.valueItem.type === 'image') {
-      var imageObj = new Image();
+    }else if (eventData.valueItem.type === 'image') {
+      const imageObj = new Image();
       imageObj.src = value;
+      imageObj.onload = this.redraw.bind(this);
       eventData.graphicItem.image(imageObj);
       imageObj.onload = this.redraw.bind(this);
     }
@@ -143,7 +144,6 @@ class Preview extends React.Component {
       const imageObj = new Image();
       imageObj.src = item.default;
       imageObj.onload = this.redraw.bind(this);
-
       return new Konva.Image({
         image: imageObj,
         x: 0,
