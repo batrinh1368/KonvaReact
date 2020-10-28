@@ -1,5 +1,6 @@
 import React from 'react';
 import '../App.css';
+import AppContext from '../app.context';
 
 class ImageElement extends React.Component {
   state = {
@@ -29,18 +30,26 @@ class ImageElement extends React.Component {
     debugger;
   }
 
+  onTextChange(event) {
+    this.context.updateItemByIndex(this.state.indexKey, {
+      value: event.target.value
+    })
+  }
+
   render() {
     return (
       <div className="element-items">
         <input
-          type="file"
+          type="text"
           className="input-control"
-          onChange={this.onUploadImage.bind(this)}
+          onChange={this.onTextChange.bind(this)}
+          value={this.state.value.value || this.state.value.default || ''}
         ></input>
-        <label>{this.state.value.value || this.state.value.default}</label>
       </div>
     );
   }
 }
+
+ImageElement.contextType = AppContext;
 
 export default ImageElement;
