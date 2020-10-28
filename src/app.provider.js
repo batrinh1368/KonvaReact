@@ -13,7 +13,7 @@ export default class AppProvider extends React.Component {
         type: 'image',
         default: this.DEFAULT_IMAGE_SRC,
       },
-    ],
+    ]
   };
 
   _addItem(item) {
@@ -87,6 +87,25 @@ export default class AppProvider extends React.Component {
             if (this.state.designs[index]) {
               this._updateItem(index, value, true);
             }
+          },
+          updateFont: (index, value) => {
+              console.log(this.state.designs[index]);
+              if (this.state.designs[index] && this.state.designs[index].type === 'text') {
+                  let item = this.state.designs[index];
+                  this.state.designs[index] = Object.assign(item, value);
+
+                  item.graphicItem.dispatchEvent({
+                      type: 'onModelChange',
+                      valueItem: Object.assign(item, value),
+                      valueIndex: index,
+                      graphicItem: item.graphicItem,
+                  });
+
+                  const designs = this.state.designs;
+                  this.setState({
+                      designs,
+                  });
+              }
           },
           addItem: (item) => {
             this._addItem(item);

@@ -2,13 +2,15 @@ import React from 'react';
 import { Stage, Layer } from 'react-konva';
 import Konva from 'konva';
 import AppContext from '../app.context';
+import './style.css'
 
 class Preview extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      designs: props.designs,
+      designs: props.designs
     };
+
     this.stage = React.createRef();
     this.layer = React.createRef();
     this.wrapperRef = React.createRef();
@@ -87,12 +89,16 @@ class Preview extends React.Component {
   onModelChange(eventData) {
     const value = eventData.valueItem.value || eventData.valueItem.default;
     if (eventData.valueItem.type === 'text') {
-      eventData.graphicItem.text(value);
+      const fontFamily = value.fontFamily || eventData.graphicItem.fontFamily;
+      eventData.graphicItem.text(value.text);
+      eventData.graphicItem.fontFamily(fontFamily);
     } else if (eventData.valueItem.type === 'image') {
       var imageObj = new Image();
       imageObj.src = value;
       eventData.graphicItem.image(imageObj);
       imageObj.onload = this.redraw.bind(this);
+    } else if (eventData.valueItem.type === 'font') {
+      eventData.graphicItem.fontFamily(value);
     }
     console.log('onModelChange');
 
@@ -169,6 +175,7 @@ class Preview extends React.Component {
         y: 0,
         text: item.default,
         draggable,
+        fontFamily: 'Courier'
       });
     }
   }

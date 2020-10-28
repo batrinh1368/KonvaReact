@@ -14,6 +14,7 @@ class TextElement extends React.Component {
 
   constructor(props) {
     super(props);
+    this.onFontChange = this.onFontChange.bind(this);
   }
 
   componentDidMount() {
@@ -26,11 +27,24 @@ class TextElement extends React.Component {
 
   onTextChange(event) {
     this.context.updateItemByIndex(this.state.indexKey, {
-      value: event.target.value,
+      value: {
+        text: event.target.value
+      },
     });
   }
 
-  onFontSizeChange() {}
+  onFontChange(event) {
+    this.context.updateFont(0, {
+      value: {
+        text: 'afsafasfasf',
+        fontFamily: event.target.value
+      }
+    });
+  }
+
+  onFontSizeChange(event) {
+
+  }
 
   onColorChange() {}
 
@@ -47,12 +61,11 @@ class TextElement extends React.Component {
         </div>
         <div className="element-attrs">
           Font:{' '}
-          <select>
+          <select onChange={this.onFontChange}>
             <option value="arial">Arial</option>
             <option value="tahoma">Tahoma</option>
             <option
-              value="raconteur"
-              linkfont="https://get.fontspace.co/webfont/LOlE/NjUxNzI0MGJjMDVlNDI0NzhhOTIyZDk5MDhhYTI4ZjUudHRm/raconteur-nf.woff"
+              value="custom"
             >
               Raconteur
             </option>
