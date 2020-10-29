@@ -32,27 +32,11 @@ class TextElement extends React.Component {
 
   onFontChange(event) {
     const option = event.target.selectedOptions[0];
-    if (option.getAttribute('linkfont')) {
-      const linkFont = option.getAttribute('linkfont');
-      const customFont = new FontFace(event.target.value, `url(${linkFont})`);
-
-      customFont
-        .load()
-        .then((loaded_face) => {
-          document.fonts.add(loaded_face);
-          this._updateConfig({
-            fontFamily: event.target.value,
-            linkFont: linkFont,
-          });
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    } else {
-      this._updateConfig({
-        fontFamily: event.target.value,
-      });
-    }
+    this._updateConfig({
+      fontFamily: event.target.value,
+      linkFont: option.getAttribute('linkfont'),
+    });
+    
   }
 
   onFontSizeChange(event) {

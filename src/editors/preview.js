@@ -34,16 +34,20 @@ class Preview extends React.Component {
 
   addItem(item) {
     console.log(item);
-    const layerItem = this._getItemObject(item);
-    layerItem.dataItem = item;
-    layerItem.on('click', this.itemClick.bind(this));
-    layerItem.on('dragend', this.itemDragEnd.bind(this));
-    layerItem.on('transformend', this.transformEnd.bind(this));
-    layerItem.addEventListener('onModelChange', this.onModelChange.bind(this));
-    item.graphicItem = layerItem;
-    this.layer.current.add(layerItem);
+    this._getItemObject(item).then((layerItem) => {
+      layerItem.dataItem = item;
+      layerItem.on('click', this.itemClick.bind(this));
+      layerItem.on('dragend', this.itemDragEnd.bind(this));
+      layerItem.on('transformend', this.transformEnd.bind(this));
+      layerItem.addEventListener(
+        'onModelChange',
+        this.onModelChange.bind(this)
+      );
+      item.graphicItem = layerItem;
+      this.layer.current.add(layerItem);
 
-    this.redraw();
+      this.redraw();
+    });
   }
 
   itemClick(event) {
@@ -90,21 +94,41 @@ class Preview extends React.Component {
     const graphicItem = eventData.graphicItem;
     const value = dataItem.value || dataItem.default;
     if (dataItem.type === 'text' || dataItem.type === 'textPath') {
-      graphicItem.text(value);
-      graphicItem.fill(dataItem.color);
-      graphicItem.fontSize(dataItem.fontSize);
-      graphicItem.fontFamily(dataItem.fontFamily);
+      this.loadCustomFont(dataItem.fontFamily, dataItem.linkFont).then((fontFamily) => {
+        graphicItem.text(value);
+        graphicItem.fill(dataItem.color);
+        graphicItem.fontSize(dataItem.fontSize);
+        graphicItem.fontFamily(fontFamily);
+      });
     } else if (eventData.valueItem.type === 'image') {
       const imageObj = new Image();
       imageObj.src = value;
       imageObj.onload = this.redraw.bind(this);
       graphicItem.image(imageObj);
-      imageObj.onload = this.redraw.bind(this);
     }
     // eventData.graphicItem = this._getItemObject(eventData.valueItem)
     console.log('onModelChange');
 
     this.redraw();
+  }
+
+  loadCustomFont(fontFamily, linkFont) {
+    if (!linkFont) {
+      return Promise.resolve(fontFamily);
+    }
+    return new Promise((resolve, reject) => {
+      const customFont = new FontFace(fontFamily, `url(${linkFont})`);
+      customFont
+        .load()
+        .then((loaded_face) => {
+          document.fonts.add(loaded_face);
+          resolve(fontFamily);
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(`Cann't found the font`);
+        });
+    });
   }
 
   addTransformer(...layerItem) {
@@ -138,8 +162,8 @@ class Preview extends React.Component {
   }
 
   redrawAll(designs) {
-    this.layer.current.clear()
-    this.layer.current.destroyChildren()
+    this.layer.current.clear();
+    this.layer.current.destroyChildren();
     designs.forEach((item) => {
       this.addItem(item);
     });
@@ -154,37 +178,51 @@ class Preview extends React.Component {
       scaleY: item.scaleY,
       skewX: item.skewX,
     });
-    if (item.type === 'image') {
-      const imageObj = new Image();
-      imageObj.src = item.value || item.default;
-      imageObj.onload = this.redraw.bind(this);
-      return new Konva.Image({
-        image: imageObj,
-        width: item.width || 200,
-        height: item.height || 200,
-        ...transformData,
-        draggable,
-      });
-    } else if (item.type === 'textPath') {
-      return new Konva.TextPath({
-        fill: '#333',
-        fontSize: 16,
-        fontFamily: 'Arial',
-        text: item.value || item.default,
-        data: 'M100,320 C200,200 400,400 500 80',
-        ...transformData,
-        draggable,
-      });
-    } else {
-      return new Konva.Text({
-        text: item.value || item.default,
-        fontSize: item.fontSize || 12,
-        fill: item.color || '#000000',
-        fontFamily: item.fontFamily || 'Arial',
-        ...transformData,
-        draggable,
-      });
-    }
+    return new Promise((resolve) => {
+      if (item.type === 'image') {
+        const imageObj = new Image();
+        imageObj.src = item.value || item.default;
+        imageObj.onload = this.redraw.bind(this);
+        resolve(
+          new Konva.Image({
+            image: imageObj,
+            width: item.width || 200,
+            height: item.height || 200,
+            ...transformData,
+            draggable,
+          })
+        );
+      } else if (item.type === 'text' || item.type === 'textPath') {
+        this.loadCustomFont(item.fontFamily, item.linkFont).then(
+          (fontFamily) => {
+            if (item.type === 'textPath') {
+              resolve(
+                new Konva.TextPath({
+                  fill: '#333',
+                  fontSize: 16,
+                  fontFamily: fontFamily,
+                  text: item.value || item.default,
+                  data: 'M100,320 C200,200 400,400 500 80',
+                  ...transformData,
+                  draggable,
+                })
+              );
+            } else {
+              resolve(
+                new Konva.Text({
+                  text: item.value || item.default,
+                  fontSize: item.fontSize || 12,
+                  fill: item.color || '#000000',
+                  fontFamily: fontFamily,
+                  ...transformData,
+                  draggable,
+                })
+              );
+            }
+          }
+        );
+      }
+    });
   }
 
   handleClick(event) {
