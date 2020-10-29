@@ -94,12 +94,14 @@ class Preview extends React.Component {
     const graphicItem = eventData.graphicItem;
     const value = dataItem.value || dataItem.default;
     if (dataItem.type === 'text' || dataItem.type === 'textPath') {
-      this.loadCustomFont(dataItem.fontFamily, dataItem.linkFont).then((fontFamily) => {
-        graphicItem.text(value);
-        graphicItem.fill(dataItem.color);
-        graphicItem.fontSize(dataItem.fontSize);
-        graphicItem.fontFamily(fontFamily);
-      });
+      this.loadCustomFont(dataItem.fontFamily, dataItem.linkFont).then(
+        (fontFamily) => {
+          graphicItem.text(value);
+          graphicItem.fill(dataItem.color);
+          graphicItem.fontSize(dataItem.fontSize);
+          graphicItem.fontFamily(fontFamily);
+        }
+      );
     } else if (eventData.valueItem.type === 'image') {
       const imageObj = new Image();
       imageObj.src = value;
@@ -114,6 +116,9 @@ class Preview extends React.Component {
 
   loadCustomFont(fontFamily, linkFont) {
     if (!linkFont) {
+      return Promise.resolve(fontFamily);
+    }
+    if (document.fonts.check('1px ' + fontFamily)) {
       return Promise.resolve(fontFamily);
     }
     return new Promise((resolve, reject) => {
@@ -169,8 +174,8 @@ class Preview extends React.Component {
     });
   }
 
-  _getItemObject(item, draggable = true) {
-    const transformData = Object.assign(DesignConst.DEFAULT_TRANSFORM, {
+  _getTransformData(item) {
+    return Object.assign(DesignConst.DEFAULT_TRANSFORM, {
       x: item.x,
       y: item.y,
       rotation: item.rotation,
@@ -178,12 +183,15 @@ class Preview extends React.Component {
       scaleY: item.scaleY,
       skewX: item.skewX,
     });
+  }
+  _getItemObject(item, draggable = true) {
     return new Promise((resolve) => {
       if (item.type === 'image') {
+        const transformData = this._getTransformData(item);
         const imageObj = new Image();
         imageObj.src = item.value || item.default;
         imageObj.onload = this.redraw.bind(this);
-        resolve(
+        return resolve(
           new Konva.Image({
             image: imageObj,
             width: item.width || 200,
@@ -195,6 +203,7 @@ class Preview extends React.Component {
       } else if (item.type === 'text' || item.type === 'textPath') {
         this.loadCustomFont(item.fontFamily, item.linkFont).then(
           (fontFamily) => {
+            const transformData = this._getTransformData(item);
             if (item.type === 'textPath') {
               resolve(
                 new Konva.TextPath({
