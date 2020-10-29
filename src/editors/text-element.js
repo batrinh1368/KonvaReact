@@ -31,9 +31,28 @@ class TextElement extends React.Component {
   }
 
   onFontChange(event) {
-    this._updateConfig({
-      fontFamily: event.target.value,
-    });
+    const option = event.target.selectedOptions[0];
+    if (option.getAttribute('linkfont')) {
+      const linkFont = option.getAttribute('linkfont');
+      const customFont = new FontFace(event.target.value, `url(${linkFont})`);
+
+      customFont
+        .load()
+        .then((loaded_face) => {
+          document.fonts.add(loaded_face);
+          this._updateConfig({
+            fontFamily: event.target.value,
+            linkFont: linkFont,
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    } else {
+      this._updateConfig({
+        fontFamily: event.target.value,
+      });
+    }
   }
 
   onFontSizeChange(event) {
@@ -78,11 +97,14 @@ class TextElement extends React.Component {
           <select onChange={this.onFontChange.bind(this)}>
             <option value="arial">Arial</option>
             <option value="tahoma">Tahoma</option>
+            <option value="raconteur" linkfont="/assets/raconteur.woff">
+              Raconteur Local
+            </option>
             <option
-              value="raconteur"
+              value="customRaconteur"
               linkfont="https://get.fontspace.co/webfont/LOlE/NjUxNzI0MGJjMDVlNDI0NzhhOTIyZDk5MDhhYTI4ZjUudHRm/raconteur-nf.woff"
             >
-              Raconteur
+              Raconteur Download
             </option>
           </select>
           Size:{' '}
